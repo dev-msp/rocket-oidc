@@ -73,6 +73,12 @@ pub struct AuthorizePayload {
     nonce: Option<String>,
 }
 
+impl AuthorizePayload {
+    pub fn client_id(&self) -> &str {
+        &self.client_id
+    }
+}
+
 impl ToString for AuthorizePayload {
     fn to_string(&self) -> String {
         format!(
