@@ -1,10 +1,10 @@
 use rocket::{http::Status, serde::json::Json, State};
+
+use entity::clients;
+use sea_orm::{ActiveModelTrait, Set};
 use serde::Deserialize;
 
-use crate::{
-    models::{Client, ClientBuilder},
-    AppState,
-};
+use crate::AppState;
 
 #[derive(Deserialize)]
 pub struct CreateClientPayload {
@@ -20,17 +20,18 @@ pub struct CreateClientPayload {
 pub async fn create_client(
     app: &State<AppState>,
     payload: Json<CreateClientPayload>,
-) -> Result<Json<Client>, Status> {
-    let builder = ClientBuilder::new()
-        .name(payload.name.clone())
-        .description(payload.description.clone())
-        .redirect_uris(payload.redirect_uris.clone())
-        .grant_types(payload.grant_types.clone())
-        .response_types(payload.response_types.clone())
-        .scope(payload.scope.clone());
+) -> Result<Json<clients::Model>, Status> {
+    let client = clients::ActiveModel {
+        name: Set(payload.name.clone()),
+        description: Set(payload.description.clone()),
+        redirect_uris: Set(payload.redirect_uris.join(",")),
+        grant_types: Set(payload.grant_types.join(",")),
+        response_types: Set(payload.response_types.join(",")),
+        scope: Set(payload.scope.join(",")),
+        ..Default::default()
+    };
 
-    let client = builder.save(&app.db_pool).await;
-
+    let client = client.insert(&app.seaorm_pool).await;
     match client {
         Ok(client) => Ok(Json(client)),
         Err(_) => Err(Status::InternalServerError),
