@@ -55,7 +55,13 @@ async fn authorize_post(
 async fn rocket() -> _ {
     rocket::build()
         .mount("/", routes![authorize_get, authorize_post])
-        .mount("/clients", routes![rest::create_client])
+        .mount(
+            "/clients",
+            routes![
+                rest::clients::get_clients,
+                rest::clients::create_client
+            ],
+        )
         .manage(App {
             seaorm_pool: db::get_seaorm_pool().await.unwrap(),
         })
