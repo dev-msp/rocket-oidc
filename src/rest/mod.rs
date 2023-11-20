@@ -4,7 +4,7 @@ use entity::clients;
 use sea_orm::{ActiveModelTrait, Set};
 use serde::Deserialize;
 
-use crate::AppState;
+use crate::App;
 
 #[derive(Deserialize)]
 pub struct CreateClientPayload {
@@ -18,7 +18,7 @@ pub struct CreateClientPayload {
 
 #[post("/", data = "<payload>")]
 pub async fn create_client(
-    app: &State<AppState>,
+    app: &State<App>,
     payload: Json<CreateClientPayload>,
 ) -> Result<Json<clients::Model>, Status> {
     let client = clients::ActiveModel {
