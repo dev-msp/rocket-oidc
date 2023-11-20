@@ -1,8 +1,4 @@
-#[derive(Debug, FromFormField)]
-pub enum ResponseType {
-    /// The Authorization Code Grant flow is described in Section 4.1 of OAuth 2.0 [RFC6749].
-    Code,
-}
+use entity::clients::ResponseType;
 
 #[derive(Debug, FromFormField)]
 pub enum Prompt {
@@ -76,6 +72,10 @@ pub struct AuthorizePayload {
 impl AuthorizePayload {
     pub fn client_id(&self) -> &str {
         &self.client_id
+    }
+
+    pub fn response_type(&self) -> &ResponseType {
+        &self.response_type
     }
 }
 
