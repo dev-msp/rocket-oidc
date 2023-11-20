@@ -59,7 +59,8 @@ async fn rocket() -> _ {
             "/clients",
             routes![
                 rest::clients::get_clients,
-                rest::clients::create_client
+                rest::clients::create_client,
+                rest::clients::rotate_client_secret
             ],
         )
         .manage(App {

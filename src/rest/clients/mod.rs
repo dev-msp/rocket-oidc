@@ -6,6 +6,10 @@ use serde::Deserialize;
 
 use crate::App;
 
+mod rotate_secret;
+
+pub use rotate_secret::rotate_client_secret;
+
 #[derive(Debug, thiserror::Error)]
 pub enum ClientError {
     #[error("Database error: {0}")]
