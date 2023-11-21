@@ -2221,6 +2221,8 @@ dependencies = [
  "serde_json",
  "sqlx",
  "thiserror",
+ "tracing",
+ "tracing-subscriber",
  "uuid",
 ]
 
