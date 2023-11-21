@@ -1,7 +1,4 @@
-use entity::{
-    clients::{Entity as Client, ResponseType},
-    uuid::Uuid,
-};
+use entity::clients::{Entity as Client, ResponseType};
 use rocket::{form::Form, http::Status, State};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 
