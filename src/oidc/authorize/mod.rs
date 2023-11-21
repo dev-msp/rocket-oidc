@@ -1,4 +1,10 @@
-use entity::clients::ResponseType;
+use entity::clients::{Entity as Client, ResponseType};
+use rocket::{form::Form, http::Status, State};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
+
+use crate::App;
+
+use super::OidcError;
 
 #[derive(Debug, FromFormField)]
 pub enum Prompt {
@@ -91,5 +97,65 @@ impl ToString for AuthorizePayload {
 			self.prompt,
             self.nonce
         )
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+enum Error {
+    #[error("Database error: {0}")]
+    Db(#[from] sea_orm::DbErr),
+
+    #[error("OIDC error: {0}")]
+    Oidc(#[from] OidcError),
+}
+
+impl From<Error> for (Status, String) {
+    fn from(err: Error) -> Self {
+        match err {
+            Error::Db(e) => (Status::InternalServerError, e.to_string()),
+            Error::Oidc(e) => (Status::BadRequest, e.to_string()),
+        }
+    }
+}
+
+async fn handle_authorize(
+    app: &State<App>,
+    payload: AuthorizePayload,
+) -> Result<Option<String>, Error> {
+    if payload.response_type() != &ResponseType::Code {
+        return Err(Error::Oidc(OidcError::UnsupportedResponseType));
+    }
+    let q = Client::find().filter(entity::clients::Column::Uuid.eq(payload.client_id()));
+    let Some(client) = q.one(&app.seaorm_pool).await? else {
+        return Ok(None);
+    };
+    Ok(Some(format!(
+        "Hello, world! {}, {}",
+        payload.to_string(),
+        client.uuid
+    )))
+}
+
+#[get("/?<payload..>")]
+pub async fn authorize_get(
+    app: &State<App>,
+    payload: AuthorizePayload,
+) -> Result<String, (Status, String)> {
+    match handle_authorize(app, payload).await {
+        Ok(Some(result)) => Ok(result),
+        Ok(None) => Err((Status::NotFound, "Not found".to_string())),
+        Err(e) => Err(e.into()),
+    }
+}
+
+#[post("/", data = "<payload>")]
+pub async fn authorize_post(
+    app: &State<App>,
+    payload: Form<AuthorizePayload>,
+) -> Result<String, (Status, String)> {
+    match handle_authorize(app, payload.into_inner()).await {
+        Ok(Some(result)) => Ok(result),
+        Ok(None) => Err((Status::NotFound, "Not found".to_string())),
+        Err(e) => Err(e.into()),
     }
 }
