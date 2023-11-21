@@ -4,3 +4,51 @@ pub(crate) mod fields;
 pub mod prelude;
 
 pub mod clients;
+
+pub mod uuid {
+    use std::str::FromStr;
+
+    use rocket::{form::FromFormField, request::FromParam};
+    use sea_orm::entity::prelude::*;
+    use serde::{Deserialize, Serialize};
+    use uuid as uuid_crate;
+
+    #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, DeriveValueType)]
+    pub struct Uuid(uuid_crate::Uuid);
+
+    impl Default for Uuid {
+        fn default() -> Self {
+            Uuid(uuid_crate::Uuid::new_v4())
+        }
+    }
+
+    impl std::fmt::Display for Uuid {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "{}", self.0)
+        }
+    }
+
+    impl FromStr for Uuid {
+        type Err = uuid_crate::Error;
+
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            uuid_crate::Uuid::parse_str(s).map(Uuid)
+        }
+    }
+
+    impl FromParam<'_> for Uuid {
+        type Error = uuid_crate::Error;
+
+        fn from_param(param: &'_ str) -> Result<Self, Self::Error> {
+            Self::from_str(param)
+        }
+    }
+
+    impl FromFormField<'_> for Uuid {
+        fn from_value(field: rocket::form::ValueField<'_>) -> rocket::form::Result<'_, Self> {
+            let uuid = uuid_crate::Uuid::parse_str(field.value)
+                .map_err(|e| rocket::form::Error::validation(format!("Invalid UUID: {}", e)))?;
+            Ok(Uuid(uuid))
+        }
+    }
+}

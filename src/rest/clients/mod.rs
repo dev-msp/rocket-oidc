@@ -1,6 +1,9 @@
 use rocket::{http::Status, serde::json::Json, State};
 
-use entity::clients::{self, GrantTypes, RedirectUris, ResponseTypes, Scope, Uuid};
+use entity::{
+    clients::{self, GrantTypes, RedirectUris, ResponseTypes, Scope},
+    uuid::Uuid,
+};
 use sea_orm::{ActiveModelTrait, EntityTrait, Set};
 use serde::Deserialize;
 

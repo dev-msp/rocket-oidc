@@ -28,51 +28,12 @@ model_vec!(
     }
 );
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, DeriveValueType)]
-pub struct Uuid(uuid::Uuid);
-
-impl Default for Uuid {
-    fn default() -> Self {
-        Uuid(uuid::Uuid::new_v4())
-    }
-}
-
-impl std::fmt::Display for Uuid {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl FromStr for Uuid {
-    type Err = uuid::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        uuid::Uuid::parse_str(s).map(Uuid)
-    }
-}
-
-impl FromParam<'_> for Uuid {
-    type Error = uuid::Error;
-
-    fn from_param(param: &'_ str) -> Result<Self, Self::Error> {
-        Self::from_str(param)
-    }
-}
-
-impl FromFormField<'_> for Uuid {
-    fn from_value(field: rocket::form::ValueField<'_>) -> rocket::form::Result<'_, Self> {
-        let uuid = uuid::Uuid::parse_str(field.value)
-            .map_err(|e| rocket::form::Error::validation(format!("Invalid UUID: {}", e)))?;
-        Ok(Uuid(uuid))
-    }
-}
-
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "clients")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: i32,
-    pub uuid: Uuid,
+    pub uuid: super::uuid::Uuid,
     pub name: String,
     pub description: Option<String>,
     pub secret: String,

@@ -3,7 +3,7 @@ use std::str::FromStr;
 use base64::Engine;
 use rocket::{http::Status, request, serde::json::Json, State};
 
-use entity::clients::{self, Uuid};
+use entity::{clients, uuid::Uuid};
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QueryTrait, Set};
 use serde_json::Value;
 
